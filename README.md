@@ -79,3 +79,92 @@ Network namespaces, according to `man 7 network_namespaces`:
 
 
 #### Finally completed the two Namespaces and connect them using veth and test both side
+
+
+## Create two Namespaces and connect them using Linux bridge.
+
+**_Step 1:_** Create two namespaces (ns1, ns2)
+- sudo ip netns add ns1
+- sudo ip netns add ns2
+
+**_Step 2:_** Check created namespaces
+- sudo ip netns list
+
+![namespace_create_list](https://github.com/Tareq-Islam/linux-network-namespace/assets/19193021/86d1be91-25b8-4a67-a94e-f97cc927d33a)
+
+**_Step 3:_** Create Bridge and configure
+- sudo ip link add br0 type bridge
+- sudo ip link set br0 up
+- sudo ip addr add 192.168.1.1/24 dev br0
+- ip addr
+  
+![bridge 1](https://github.com/Tareq-Islam/linux-network-namespace/assets/19193021/8d63c9ff-31fb-4a7f-b4df-c140f8c2a95d)
+
+**_Step 4:_** Test Bridge connection
+  - ping -c 2 192.168.1.1
+
+ ![2024-02-03-12-38-47](https://github.com/Tareq-Islam/linux-network-namespace/assets/19193021/aa15f6e1-b096-473a-819d-641848a09964)
+
+**_Step 5:_** For ns1
+
+  #### Create virtual ethernet cable and configure
+  - sudo ip link add veth0 type veth peer name ceth0
+  - sudo ip link set veth0 master br0 (connect to the bridge br0)
+  - sudo ip link set veth0 up (up veth0)
+  - sudo ip link set ceth0 netns ns1 (connect to the ns1)
+    
+  #### Configure interface
+  - sudo ip netns exec ns1 bash
+  - ip link set lo up
+  - ip link set ceth0 up
+  - ip addr add 192.168.1.10/24 dev ceth0
+  - ip add
+
+![2024-02-03-13-16-19](https://github.com/Tareq-Islam/linux-network-namespace/assets/19193021/fdac28b4-f5ee-4f99-8988-ab345ffca893)
+
+
+**_Step 6:_** For ns2
+
+  #### Create virtual ethernet cable and configure
+  - sudo ip link add veth1 type veth peer name ceth1
+  - sudo ip link set veth1 master br0 (connect to the bridge br0)
+  - sudo ip link set veth1 up (up veth1)
+  - sudo ip link set ceth1 netns ns2 (connect to the ns2)
+    
+  #### Configure interface
+  - sudo ip netns exec ns2 bash
+  - ip link set lo up
+  - ip link set ceth1 up
+  - ip addr add 192.168.1.11/24 dev ceth1
+  - ip add
+    
+  ![2024-02-03-13-18-50](https://github.com/Tareq-Islam/linux-network-namespace/assets/19193021/f0ce2dd9-b8f7-4b1a-827f-acf1b5aeca9c)
+
+  
+**_Step 7:_** Test NS2, Bridge Connection from NS1
+
+  - ping -c 2 192.168.1.1 (test br0)
+
+ ![2024-02-03-13-24-57](https://github.com/Tareq-Islam/linux-network-namespace/assets/19193021/05c4a735-d73a-438b-9b95-cd012a888c1d)
+
+    
+  - ping -c 2 192.168.1.11 (test ns2)
+ 
+ ![2024-02-03-13-25-11](https://github.com/Tareq-Islam/linux-network-namespace/assets/19193021/bf851e74-4879-4718-8555-4bc8b5867a8d)
+
+   
+    
+**_Step 8:_** Test NS1, Bridge Connection from NS2
+
+  - ping -c 2 192.168.1.1 (test br0)
+
+ ![2024-02-03-13-21-18](https://github.com/Tareq-Islam/linux-network-namespace/assets/19193021/7d50ad9c-600e-41f4-bf19-7cf14aca438a)
+
+    
+  - ping -c 2 192.168.1.10 (test ns1)
+    
+ ![2024-02-03-13-21-39](https://github.com/Tareq-Islam/linux-network-namespace/assets/19193021/c5122ba2-cb7a-4be4-a533-174cf3e0a11f)
+
+    
+
+#### Finally completed the two Namespaces and connect them using linux bridge.
